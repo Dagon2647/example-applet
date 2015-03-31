@@ -1,0 +1,37 @@
+apply plugin:"java"
+
+
+configurations{
+    signed
+}
+task signJar{
+    dependsOn+="jar"
+    it.ext{
+        outputJar = "${buildDir}/libs/${project.name}-signed.jar"
+    }
+    doLast{
+        ant.signjar(
+                jar:jar.archivePath,
+                alias:"dagon-desktop",
+                storepass:"12345678",
+                storetype:"PKCS12",
+                keypass:"12345678",
+                keystore:file("dagon-desktop.p12"),
+                verbose:false,
+                signedjar: outputJar
+        )
+    }
+}
+
+artifacts.add("signed", file(signJar.outputJar)) {
+    extension "jar"
+    type "jar"
+    builtBy signJar
+}
+
+jar{
+    manifest {
+        attributes("Application-Name": "Example Applet",
+                "Permissions": "sandbox")
+    }
+}
